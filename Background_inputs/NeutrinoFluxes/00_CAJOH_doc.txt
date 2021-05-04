@@ -1,0 +1,10 @@
+The neutrino fluxes are taken from Ciaran O'Hares code for the 
+CYGNUS paper https://arxiv.org/abs/2008.12587, taken from
+his GitHub repository
+https://github.com/cajohare/CYGNUS
+on Oct 19, 2020
+
+The CAJOH_*_shape.dat files contain the spectral shapes, but are
+normalized to 1.
+The CAJOH_*.dat files have the correct normalization of the
+respective spectra. 

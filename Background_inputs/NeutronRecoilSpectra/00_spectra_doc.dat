@@ -1,0 +1,11 @@
+Note that all these spectra are computed for a benchmark 
+uranium-238 concentration of 10^{-10} atoms 238U per 
+molecule of the target material. Note that they are
+already weighted for the abundance of the respective
+target isotopes and elements.
+To convert them to a concentration C^238 per weight,
+multiply the spectra by 
+(m_mol^X/m_mol^238) x (C^238 / 10^-10)
+where
+m_mol^X - molar mass of the target molecule
+m_mol^238 - molar mass uf 238U
