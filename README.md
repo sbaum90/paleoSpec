@@ -3,6 +3,8 @@ Calculates signal and background spectra for paleo detectors.
 
 Jupyter Notebooks demonstrating how to use the package can be found in the "ExamplesAndTests" folder.
 
+If you use **paleoSpec** for your work, please cite [arXiv:1806.05991](https://arxiv.org/abs/1806.05991), [arXiv:1811.06844](https://arxiv.org/abs/1811.06844), and [arXiv:1906.05800](https://arxiv.org/abs/1906.05800).
+
 # Description
 The high-level functions to compute the track length spectra are in "CalcSpectra.py". Currently, CalcSpectra allows to compute:
 
