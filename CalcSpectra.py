@@ -4,8 +4,10 @@ import sys
 from scipy.special import erf
 import importlib
 
-from paleoSpec import MWHaloSpec
 from paleoSpec import BkgNeuSpec
+from paleoSpec import DarkDiskSpec
+from paleoSpec import MWHaloSpec
+from paleoSpec import SubHaloSpec
 
 # some constants
 secPERyr = 3.154e7
@@ -76,76 +78,7 @@ class CalcSpectra:
             )
 
     # -----------------------------------------------
-    # smooth Milky Way halo signal calculation
-    def calc_dRdx_MW(self, mDM, SIDD, rhoDM=0.3, vrel=248.0, sigv=166.0, vesc=550.0):
-        """
-        returns a tuple
-        [track lengths, differential Rate(per unit time) of tracks
-        per unit track length and unit target mass]
-        summed over the mineral from the MW, assuming a standard
-        truncated Maxwell-Boltzmann velocity distribution
-        inputs:
-        mDM - DM mass in [GeV]
-        SIDD - SI cross section in [cm^2]
-        ----
-        rhoDM - local DM density in [GeV/cm^3]
-        vrel - relative speed wrt the galactic rest frame in [km/s]
-        sigv - velocity dispersion in [km/s]
-        vesc - escape velocity in [km/s]
-        output:
-        x_T [Å]
-        (dR/dx) in [1/Å/kg/Myr]
-        """
-        xvec = np.logspace(0, 4, 801)  # grid in track lengths for output [Å]
-        # calculate recoil energy spectra for each element
-        # these are not weighted by the mass fraction yet (done when converting to track length spectra)
-        dRdE_MW = []
-        for i in range(len(self.TargetList.nameT_list)):
-            dRdE_MW.append(
-                MWHaloSpec.dRdE(
-                    mDM,
-                    SIDD,
-                    self.TargetList.mT_list[i],
-                    self.TargetList.AT_list[i],
-                    1.0,
-                    rhoDM=rhoDM,
-                    vrel=vrel,
-                    sigv=sigv,
-                    vesc=vesc,
-                )
-            )
-        # calculate track length spectrum for each element (in units of 1/Å/kg/day)
-        dRdx_MW = []
-        for i in range(len(self.TargetList.nameT_list)):
-            dRdx_MW.append(
-                [
-                    np.interp(
-                        dRdE_MW[i][0],
-                        self.Trange[i][:, 0],
-                        self.Trange[i][:, 2],
-                        left=0.0,
-                        right=0.0,
-                    ),
-                    np.interp(
-                        dRdE_MW[i][0],
-                        self.Trange[i][:, 0],
-                        self.Trange[i][:, 1],
-                        left=0.0,
-                        right=0.0,
-                    )
-                    * dRdE_MW[i][1],
-                ]
-            )
-        # interpolate and sum
-        dRdx_MW_sum = np.zeros(xvec.shape)
-        for i in range(len(self.TargetList.nameT_list)):
-            dRdx_MW_sum += np.interp(
-                xvec, dRdx_MW[i][0], dRdx_MW[i][1], left=0.0, right=0.0
-            )
-        # convert units
-        dRdx_MW_sum *= dayPERMyr
-        return xvec, dRdx_MW_sum
-
+    # High level functions for Background spectra
     # -----------------------------------------------
     # neutrino background calculation
     def calc_dRdx_BkgNeu(self, Fnu):
@@ -335,6 +268,234 @@ class CalcSpectra:
         dRdx_n_sum *= conv_fac
         return xvec, dRdx_n_sum
 
+    # -----------------------------------------------
+    # High level function for MW DM halo spectrum
+    # -----------------------------------------------
+    # smooth Milky Way halo signal calculation
+    def calc_dRdx_MW(self, mDM, SIDD, rhoDM=0.3, vrel=248.0, sigv=166.0, vesc=550.0):
+        """
+        returns a tuple
+        [track lengths, differential Rate(per unit time) of tracks
+        per unit track length and unit target mass]
+        summed over the mineral from the MW, assuming a standard
+        truncated Maxwell-Boltzmann velocity distribution
+        inputs:
+        mDM - DM mass in [GeV]
+        SIDD - SI cross section in [cm^2]
+        ----
+        rhoDM - local DM density in [GeV/cm^3]
+        vrel - relative speed wrt the galactic rest frame in [km/s]
+        sigv - velocity dispersion in [km/s]
+        vesc - escape velocity in [km/s]
+        output:
+        x_T [Å]
+        (dR/dx) in [1/Å/kg/Myr]
+        """
+        xvec = np.logspace(0, 4, 801)  # grid in track lengths for output [Å]
+        # calculate recoil energy spectra for each element
+        # these are not weighted by the mass fraction yet (done when converting to track length spectra)
+        dRdE_MW = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dRdE_MW.append(
+                MWHaloSpec.dRdE(
+                    mDM,
+                    SIDD,
+                    self.TargetList.mT_list[i],
+                    self.TargetList.AT_list[i],
+                    1.0,
+                    rhoDM=rhoDM,
+                    vrel=vrel,
+                    sigv=sigv,
+                    vesc=vesc,
+                )
+            )
+        # calculate track length spectrum for each element (in units of 1/Å/kg/day)
+        dRdx_MW = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dRdx_MW.append(
+                [
+                    np.interp(
+                        dRdE_MW[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 2],
+                        left=0.0,
+                        right=0.0,
+                    ),
+                    np.interp(
+                        dRdE_MW[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 1],
+                        left=0.0,
+                        right=0.0,
+                    )
+                    * dRdE_MW[i][1],
+                ]
+            )
+        # interpolate and sum
+        dRdx_MW_sum = np.zeros(xvec.shape)
+        for i in range(len(self.TargetList.nameT_list)):
+            dRdx_MW_sum += np.interp(
+                xvec, dRdx_MW[i][0], dRdx_MW[i][1], left=0.0, right=0.0
+            )
+        # convert units
+        dRdx_MW_sum *= dayPERMyr
+        return xvec, dRdx_MW_sum
+
+    # -----------------------------------------------
+    # High level function for dark disk spectrum
+    # -----------------------------------------------
+    def calc_dndx_DD(self, mDM, SIDD, SigDD, vvDD, thetavDD, thetaorbitDD, sigvDD):
+        """
+        returns a tuple
+        [track lengths, differential number of tracks
+        per unit track length and unit target mass]
+        summed over the mineral from crossing through
+        the dark disk once
+        inputs:
+        mDM - DM mass in [GeV]
+        SIDD - SI cross section in [cm^2]
+        ---
+        SigDD - surface density of the dark disk in [Msol/pc^2]
+        vvDD - vertical speed relative to the dark disk in [km/s]
+        thetavDD - crossing angle of the solar system relative
+            to the dark disk in [rad]
+        thetaorbitDD - angle between the orbital plane of the Earth
+            around the Sun and the velocity of the solar system
+            relative to the dark disk in [rad]
+        sigvDD - velocity dispersion of the dark disk in [km/s]
+        output:
+        x [Å]
+        (dn/dx) in [1/Å/kg]
+        """
+        xvec = np.logspace(0, 4, 801)  # grid in track lengths for output [Å]
+        # calculate recoil energy spectra for each element
+        # these are not weighted by the mass fraction yet (done when converting to track length spectra)
+        dndE_DD = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dndE_DD.append(
+                DarkDiskSpec.dndE(
+                    mDM,
+                    SIDD,
+                    self.TargetList.mT_list[i],
+                    self.TargetList.AT_list[i],
+                    1.0,
+                    SigDD,
+                    vvDD,
+                    thetavDD,
+                    thetaorbitDD,
+                    sigvDD,
+                )
+            )
+        # calculate track length spectrum for each element
+        dndx_DD = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dndx_DD.append(
+                [
+                    np.interp(
+                        dndE_DD[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 2],
+                        left=0.0,
+                        right=0.0,
+                    ),
+                    np.interp(
+                        dndE_DD[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 1],
+                        left=0.0,
+                        right=0.0,
+                    )
+                    * dndE_DD[i][1],
+                ]
+            )
+        # interpolate and sum
+        dndx_DD_sum = np.zeros(xvec.shape)
+        for i in range(len(self.TargetList.nameT_list)):
+            dndx_DD_sum += np.interp(
+                xvec, dndx_DD[i][0], dndx_DD[i][1], left=0.0, right=0.0
+            )
+        return xvec, dndx_DD_sum
+        
+    # -----------------------------------------------
+    # High level function for DM subhalo spectrum
+    # -----------------------------------------------
+    def calc_dndx_sh(self, mDM, SIDD, Msh, csh, bsh, vsh, ti, tf):
+        """
+        returns a tuple
+        [track lengths, differential number of tracks
+        per unit track length and unit target mass]
+        summed over the mineral from flying through a mini-halo
+        inputs:
+        mDM - DM mass in [GeV]
+        SIDD - SI cross section in [cm^2]
+        ----
+        Msh - mass of minihalo in [Msol]
+        csh - concentration parameter of minihalo
+        bsh - impact parameter for minihalo [pc]
+        vsh - relative speed wrt minihalo [km/s]
+        ti - initial time in [Myr] (t = 0 corresponds to time of closest approach)
+        tf - final time in [Myr] (t = 0 corresponds to time of closest approach)
+        output:
+        x [Å]
+        (dn/dx) in [1/Å/kg]
+        """
+        xvec = np.logspace(0, 4, 801)  # grid in track lengths for output [Å]
+        # get the inputs x0 and x1 for the spectrum calculation
+        x0 = vsh * ti * secPERyr * 1e6 / kmPERpc
+        x1 = vsh * tf * secPERyr * 1e6 / kmPERpc
+        # calculate recoil energy spectra for each element
+        # these are not weighted by the mass fraction yet (done when converting to track length spectra)
+        dndE_sh = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dndE_sh.append(
+                SubHaloSpec.dndE(
+                    mDM,
+                    SIDD,
+                    self.TargetList.mT_list[i],
+                    self.TargetList.AT_list[i],
+                    1.0,
+                    Msh,
+                    csh,
+                    bsh,
+                    vsh,
+                    x0,
+                    x1,
+                )
+            )
+        # calculate track length spectrum for each element
+        dndx_sh = []
+        for i in range(len(self.TargetList.nameT_list)):
+            dndx_sh.append(
+                [
+                    np.interp(
+                        dndE_sh[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 2],
+                        left=0.0,
+                        right=0.0,
+                    ),
+                    np.interp(
+                        dndE_sh[i][0],
+                        self.Trange[i][:, 0],
+                        self.Trange[i][:, 1],
+                        left=0.0,
+                        right=0.0,
+                    )
+                    * dndE_sh[i][1],
+                ]
+            )
+        # interpolate and sum
+        dndx_sh_sum = np.zeros(xvec.shape)
+        for i in range(len(self.TargetList.nameT_list)):
+            dndx_sh_sum += np.interp(
+                xvec, dndx_sh[i][0], dndx_sh[i][1], left=0.0, right=0.0
+            )
+        return xvec, dndx_sh_sum
+
+    # -----------------------------------------------
+    # Special function to compute thhe smeared & binned
+    # spectrum from the single-alpha background
+    # -----------------------------------------------
     def smear_and_bin_1a(self, C238, sigx, cutoff=0.5, xmin=-1, xmax=1e4, nbins=-1, logbins=False):
         """
         returns a tuple [bin edges, entries/bin]
@@ -391,7 +552,9 @@ class CalcSpectra:
 
 
 # -----------------------------------------------
-# finite resolution smearing and binning
+# Function to account for finite readout resolution
+# by smearing and binning
+# -----------------------------------------------
 def smear_and_bin(spectrum, sigx, cutoff=0.5, xmin=-1, xmax=1e4, nbins=-1, logbins=False):
     """
     returns a tuple [bin edges, entries/bin]
