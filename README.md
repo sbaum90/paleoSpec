@@ -3,7 +3,7 @@ Calculates signal and background spectra for paleo detectors.
 
 Jupyter Notebooks demonstrating how to use the package can be found in the "ExamplesAndTests" folder. In particular, see the notebook "ExamplesAndTests/Examples.ipynb" for how to generate track length spectra in Paleo detectors using the high level functions in CalcSpectra.py.
 
-If you use **paleoSpec** for your work, please cite [arXiv:1806.05991](https://arxiv.org/abs/1806.05991), [arXiv:1811.06844](https://arxiv.org/abs/1811.06844), [arXiv:1906.05800](https://arxiv.org/abs/1906.05800), and [arXiv:2106.06559](https://arxiv.org/abs/2106.06559)
+If you use **paleoSpec** for your work, please cite [arXiv:1806.05991](https://arxiv.org/abs/1806.05991), [arXiv:1811.06844](https://arxiv.org/abs/1811.06844), [arXiv:1906.05800](https://arxiv.org/abs/1906.05800), and [arXiv:2106.06559](https://arxiv.org/abs/2106.06559). If you use the modules computing the track length spectra for a dark disk or a subhalo in your work, please cite [arXiv:2107.02812](https://arxiv.org/abs/2107.02812).
 
 # Description
 The high-level functions to compute the track length spectra are in "CalcSpectra.py". Currently, CalcSpectra allows to compute:
