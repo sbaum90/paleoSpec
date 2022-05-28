@@ -29,6 +29,7 @@ good_mineral_list = [
     "Gypsum",
     "Halite",
     "Mirabilite",
+    "Muscovite",
     "Natron",
     "Nchwaningite",
     "Nickelbischofite",

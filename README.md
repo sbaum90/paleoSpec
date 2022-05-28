@@ -51,6 +51,7 @@ Currently supported Minerals:
 - Gypsum
 - Halite
 - Mirabilite
+- Muscovite
 - Natron
 - Nchwaningite
 - Nickelbischofite
