@@ -547,7 +547,7 @@ class CalcSpectra:
                 - erf((self.TargetList.Th_length - x_i[1:]) / (np.sqrt(2.) * sigx))
             )
         else:
-            ni = np.zeros(len(x_i)-1)
+            n_i = np.zeros(len(x_i)-1)
         normfac = C238 * NA / mmol238 * Thalf234 / Thalf238
         return x_i, normfac * n_i
 
