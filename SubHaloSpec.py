@@ -139,8 +139,11 @@ def rhos_NFW(Mvir, cvir, z):
     returns the characteristic denisty [Msol/pc^3]
     for a NFW halo with virial mass Mvir [Msol],
     concentration parameters cvir, forming at redshift z
+
+    NOTE: This method has been updated to include a factor
+    of 3 which was missed in Eq. (17) of arXiv:2107.02812
     """
-    return cvir ** 3 / f(cvir) * Dvir(z) * rho_crit(z)
+    return cvir ** 3 / f(cvir) * Dvir(z) * rho_crit(z) / 3
 
 
 def mk_xvec(x0, x1, bsh, xN):

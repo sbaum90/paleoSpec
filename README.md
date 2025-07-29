@@ -18,6 +18,8 @@ The high-level functions to compute the track length spectra are in "CalcSpectra
 
 - the time-integrated track length spectrum dn/dx (per unit target mass) for traversing a NFW subhalo (calc_dndx_sh)
 
+    NOTE: SubHaloSpec.py has been modified to include a factor of 3 which was missed in Eq. (17) of arXiv:2107.02812.  Therefore, this code will not exactly reproduce the subhalo plots in arXiv:2107.02812.
+
 These functions return a tuple (x, dn/dx) or (x, dR/dx), where the first entry is a vector of track lengths, and the second entry is a vector containing the spectrum (at these track length). Note that depending on the source of the spectrum, these functions return either the differential rate of events, or the differential number of events! The inputs to the respective functions are described in the script.
 
 To account for finite resolution effects, each spectrum produced by the above functions can be fed into the "smear_and_bin" function. This function accounts for finite resolution effects assuming a gaussian distribution of the track length error. It returns a tuple of (bin edges, entries/bin). Note that the input format of "smear_and_bin" is set up to take the output of the different functions to compute the spectra above. For example, to compute the smeared and binned spectrum from the local DM signal, call smear_and_bin(calc_dRdx_MW(args), sigx) where sigx is the track length resolution. Bins are chosen automatically, see the args of "smear_and_bin" and the comments for the input kwargs that allow the user to control the binning.
